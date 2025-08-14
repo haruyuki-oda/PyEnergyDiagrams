@@ -234,7 +234,7 @@ class ED:
             self.fig = ax.figure
 
             # Constrain the target axis to have the proper aspect ratio
-            self.ax.set_aspect(self.aspect)
+            # self.ax.set_aspect(self.aspect)
 
         self.ax.set_ylabel(ylabel)
         self.ax.axes.get_xaxis().set_visible(False)
