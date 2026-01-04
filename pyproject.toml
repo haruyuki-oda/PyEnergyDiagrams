@@ -1,26 +1,72 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+energydiagram = ["py.typed"]
+
 [project]
-name = "energydiagram"
+name = "pyenergydiagram"
 version = "1.0.0"
 description = "A tool for plotting Energy Diagrams using Matplotlib."
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "Giacomo Marchioro", email = "giacomomarchioro@outlook.com" }
+    { name = "Giacomo Marchioro", email = "giacomomarchioro@outlook.com" },
 ]
-dependencies = [
-  "matplotlib"
+maintainers = [
+    { name = "Giacomo Marchioro", email = "giacomomarchioro@outlook.com" },
+]
+keywords = [
+    "energy diagram",
+    "matplotlib",
+    "chemistry",
+    "visualization",
 ]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent"
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
-keywords = ["energy diagram", "matplotlib", "chemistry", "visualization"]
+dependencies = ["matplotlib>=3.3.0"]
+
+[project.optional-dependencies]
+dev = ["black>=24.0.0", "pytest>=7.0.0", "pytest-cov>=4.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/giacomomarchioro/PyEnergyDiagrams"
+Repository = "https://github.com/giacomomarchioro/PyEnergyDiagrams"
+Issues = "https://github.com/giacomomarchioro/PyEnergyDiagrams/issues"
+
+[tool.black]
+line-length = 79
+target-version = ["py39", "py310", "py311", "py312", "py313"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["--verbose", "--cov=energydiagram", "--cov-report=term-missing"]

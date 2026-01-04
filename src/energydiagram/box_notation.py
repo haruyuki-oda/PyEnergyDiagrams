@@ -5,14 +5,16 @@ Created on Sat Jan  6 21:01:16 2018
 @author: giacomo
 """
 
+import warnings
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.path import Path
 
 
 def plot_orbital_boxes(
-    ax, x, y, boxes_number, electrons_number, box_side=1, spacing_f=5
-):
+    ax: plt.Axes, x: float, y: float, boxes_number: int, electrons_number: int,
+    box_side: float = 1, spacing_f: int = 5
+) -> None:
     """Utility for adding an electron box to the energy state.
 
     Args:
@@ -30,7 +32,7 @@ def plot_orbital_boxes(
     Xi = x - boxes_number * box_side / 2.0
     Yi = y - box_side / 2.0
 
-    def add_spin(Xi, Yi, box_side, direction):
+    def add_spin(Xi: float, Yi: float, box_side: float, direction: str) -> patches.PathPatch:
         """Add spin to electron box.
 
         Args:
@@ -101,7 +103,7 @@ def plot_orbital_boxes(
         ax.add_patch(square)
     # plot the spins using Aufbau
     if electrons_number > boxes_number * 2:
-        Warning("electrons_number grater than number of availabe sites")
+        warnings.warn("electrons_number greater than number of available sites")
     if electrons_number > 0:
         if electrons_number <= boxes_number:
             for e in range(electrons_number):
