@@ -14,6 +14,7 @@ y|
 
 """
 
+from typing import Optional, Union, Tuple, Any, List
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import PathPatch
@@ -22,16 +23,26 @@ from .box_notation import plot_orbital_boxes
 
 
 class ED:
-    def __init__(self, aspect="equal"):
+    # Class constants
+    GOLDEN_RATIO: float = 1.6181
+    DEFAULT_OFFSET_RATIO: float = 0.02
+    DEFAULT_ARROW_WIDTH: float = 20.0
+    DIMENSION_RATIO: float = 0.5
+    SPACE_RATIO: float = 0.5
+    XLIM_DIMENSION_RATIO: float = 0.6
+    XLIM_SPACE_RATIO: float = 0.4
+
+    def __init__(self, aspect: Union[str, float] = "auto", xlim: Optional[Tuple[float, float]] = (0, 10)) -> None:
         # plot parameters
-        self.ratio = 1.6181
+        self.ratio = self.GOLDEN_RATIO
         self.dimension = "auto"
         self.space = "auto"
         self.offset = "auto"
-        self.offset_ratio = 0.02
+        self.offset_ratio = self.DEFAULT_OFFSET_RATIO
         self.color_bottom_text = "blue"
         self.color_top_text = "k"
         self.aspect = aspect
+        self.xlim = xlim
         self.round_energies_at_digit = "keep all digits"
         self.top_text_fontsize = "medium"
         self.bottom_text_fontsize = "medium"
@@ -47,24 +58,24 @@ class ED:
         self.right_texts = []
         self.links = []
         self.arrows = []
-        self.electons_boxes = []
+        self.electrons_boxes = []
         self.level_kwargs = []
-        # matplotlib fiugre handlers
+        # matplotlib figure handlers
         self.fig = None
         self.ax = None
 
     def add_level(
         self,
-        energy,
-        bottom_text="",
-        position=None,
-        top_text=None,
-        right_text="",
-        left_text="",
-        color="k",
-        linewidth=2,
-        **kwargs,
-    ):
+        energy: float,
+        bottom_text: str = "",
+        position: Optional[Union[int, float, str]] = None,
+        top_text: Optional[Union[str, float]] = None,
+        right_text: str = "",
+        left_text: str = "",
+        color: str = "k",
+        linewidth: float = 2,
+        **kwargs: Any,
+    ) -> None:
         """
         Method of ED class
         This method add a new energy level to the plot.
@@ -106,12 +117,12 @@ class ED:
         """
 
         if position is None:
-            position = self.pos_number + 1
+            position = self.pos_number + 1 - 0.75
             self.pos_number += 1
         elif isinstance(position, (int, float)):
             pass
         elif position == "last" or position == "l":
-            position = self.pos_number
+            position = self.pos_number - 0.75
         else:
             raise ValueError(
                 "Position must be None or 'last' (abrv. 'l') or in case an integer or float specifing the position. It was: %s"
@@ -137,8 +148,9 @@ class ED:
         self.arrows.append([])
 
     def add_arrow(
-        self, start_level_id, end_level_id, position="center", text=None, **kwargs
-    ):
+        self, start_level_id: int, end_level_id: int, position: str = "center",
+        text: Optional[Union[str, float]] = None, **kwargs: Any
+    ) -> None:
         """
         Method of ED class
         Add a arrow between two energy levels using IDs of the level. Use
@@ -156,18 +168,22 @@ class ED:
         Append arrow to self.arrows
 
         """
+        if start_level_id < 0 or start_level_id >= len(self.energies):
+            raise IndexError(f"start_level_id {start_level_id} is out of range. Valid range: 0-{len(self.energies)-1}")
+        if end_level_id < 0 or end_level_id >= len(self.energies):
+            raise IndexError(f"end_level_id {end_level_id} is out of range. Valid range: 0-{len(self.energies)-1}")
         self.arrows[start_level_id].append((end_level_id, position, text, kwargs))
 
     def add_link(
         self,
-        start_level_id,
-        end_level_id,
-        line_order=1,
-        color="k",
-        ls="dashed",
-        lw=1.0,
-        **kwargs,
-    ):
+        start_level_id: int,
+        end_level_id: int,
+        line_order: int = 1,
+        color: str = "k",
+        ls: str = "dashed",
+        lw: float = 1.0,
+        **kwargs: Any,
+    ) -> None:
         """
         Method of ED class
         Add a link between two energy levels using IDs of the level. Use
@@ -191,40 +207,91 @@ class ED:
         Append link to self.links
 
         """
+        if start_level_id < 0 or start_level_id >= len(self.energies):
+            raise IndexError(f"start_level_id {start_level_id} is out of range. Valid range: 0-{len(self.energies)-1}")
+        if end_level_id < 0 or end_level_id >= len(self.energies):
+            raise IndexError(f"end_level_id {end_level_id} is out of range. Valid range: 0-{len(self.energies)-1}")
         kwargs["line_order"] = line_order
         kwargs["color"] = color
         kwargs["ls"] = ls
         kwargs["lw"] = lw
         self.links[start_level_id].append((end_level_id, kwargs))
 
-    def add_electronbox(self, level_id, boxes, electrons, side=0.5, spacing_f=5):
+    def _calculate_x_position(self, position: float) -> float:
         """
-        Method of ED class
-        Add a link between two energy levels using IDs of the level. Use
-        self.plot(show_index=True) to show the IDs of the levels.
+        Helper method to calculate x position based on xlim settings.
 
         Parameters
         ----------
-        start_level_id : int
-                 Starting level ID
-        end_level_id : int
-                 Ending level ID
+        position : float
+            The position index
 
         Returns
         -------
-        Append link to self.links
+        float
+            The calculated x coordinate
+        """
+        if self.xlim is not None:
+            xmin, _ = self.xlim
+            return xmin + position * (self.dimension + self.space)
+        else:
+            return position * (self.dimension + self.space)
+
+    def add_electronbox(self, level_id: int, boxes: int, electrons: int,
+                        side: float = 0.5, spacing_f: int = 5) -> None:
+        """
+        Method of ED class
+        Add electron orbital box notation to an energy level. Use
+        self.plot(show_IDs=True) to show the IDs of the levels.
+
+        Parameters
+        ----------
+        level_id : int
+                 The ID of the level to add electron boxes to
+        boxes : int
+                 Number of orbital boxes to display
+        electrons : int
+                 Number of electrons to fill in the boxes
+        side : float
+                 Size of each box (default 0.5)
+        spacing_f : int
+                 Spacing factor between electron spins (default 5)
+
+        Returns
+        -------
+        Appends electron box configuration to self.electrons_boxes
 
         """
+        if level_id < 0 or level_id >= len(self.energies):
+            raise IndexError(f"level_id {level_id} is out of range. Valid range: 0-{len(self.energies)-1}")
         self.__auto_adjust()
-        x = (
-            self.positions[level_id] * (self.dimension + self.space)
-            + self.dimension * 0.5
-        )
+        x = self._calculate_x_position(self.positions[level_id]) + self.dimension * 0.5
         y = self.energies[level_id]
-        self.electons_boxes.append((x, y, boxes, electrons, side, spacing_f))
+        self.electrons_boxes.append((x, y, boxes, electrons, side, spacing_f))
 
-    def plot_level(self, energy, pos, btext, ttext, rtext, ltext, **kwargs):
-        start = pos * (self.dimension + self.space)
+    def plot_level(self, energy: float, pos: float, btext: str, ttext: Union[str, float],
+                   rtext: str, ltext: str, **kwargs: Any) -> None:
+        """
+        Internal method to plot a single energy level with text labels.
+
+        Parameters
+        ----------
+        energy : float
+            Energy value of the level
+        pos : float
+            Position index for the level
+        btext : str
+            Bottom text label
+        ttext : Union[str, float]
+            Top text label (usually energy value)
+        rtext : str
+            Right text label
+        ltext : str
+            Left text label
+        **kwargs : Any
+            Additional plotting parameters for hlines
+        """
+        start = self._calculate_x_position(pos)
         self.ax.hlines(energy, start, start + self.dimension, **kwargs)
         # top text
         self.ax.text(
@@ -267,11 +334,23 @@ class ED:
             fontsize=self.bottom_text_fontsize,
         )
 
-    def plot_link(self, idx, idy, **kwargs):
-        # i is a tuple: (end_level_id,ls,linewidth,color)
-        start = self.positions[idx] * (self.dimension + self.space)
+    def plot_link(self, idx: int, idy: int, **kwargs: Any) -> None:
+        """
+        Internal method to plot a link between two energy levels.
+
+        Parameters
+        ----------
+        idx : int
+            Starting level index
+        idy : int
+            Ending level index
+        **kwargs : Any
+            Line drawing parameters including line_order, color, ls, lw
+        """
+        # Calculate positions
+        start = self._calculate_x_position(self.positions[idx])
         x1 = start + self.dimension
-        x2 = self.positions[idy] * (self.dimension + self.space)
+        x2 = self._calculate_x_position(self.positions[idy])
         y1 = self.energies[idx]
         y2 = self.energies[idy]
         # draw line
@@ -305,8 +384,25 @@ class ED:
         else:
             raise NotImplementedError
 
-    def plot_arrow(self, idx, idy, position, text, **kwargs):
-        start = self.positions[idx] * (self.dimension + self.space)
+    def plot_arrow(self, idx: int, idy: int, position: str,
+                   text: Optional[Union[str, float]], **kwargs: Any) -> None:
+        """
+        Internal method to plot an arrow between two energy levels.
+
+        Parameters
+        ----------
+        idx : int
+            Starting level index
+        idy : int
+            Ending level index
+        position : str
+            Arrow position ('center', 'left', or 'right')
+        text : Optional[Union[str, float]]
+            Text to display on the arrow (default: energy gap)
+        **kwargs : Any
+            Arrow styling parameters
+        """
+        start = self._calculate_x_position(self.positions[idx])
         x_arrow = start + 0.5 * self.dimension
         x_text = x_arrow
         y1 = self.energies[idx]
@@ -320,7 +416,7 @@ class ED:
                 text = round(gap, self.round_energies_at_digit)
 
         middle = y1 - 0.5 * gap
-        arrow_width = 20.0
+        arrow_width = self.DEFAULT_ARROW_WIDTH
         arrowprops = {
             "arrowstyle": "<->",
             "shrinkA": 0,
@@ -368,19 +464,20 @@ class ED:
         p1 = self.positions[idx]
         p2 = self.positions[idy]
         if p1 > p2:
-            x2 = p2 * (self.dimension + self.space) + self.dimension
-            x1 = p1 * (self.dimension + self.space) + self.dimension
+            x2 = self._calculate_x_position(p2) + self.dimension
+            x1 = self._calculate_x_position(p1) + self.dimension
             line = Line2D([x1, x2], [y2, y2], **line_kwargs)
             self.ax.add_line(line)
         elif p2 > p1:
-            x2 = p2 * (self.dimension + self.space)
-            x1 = p1 * (self.dimension + self.space)
+            x2 = self._calculate_x_position(p2)
+            x1 = self._calculate_x_position(p1)
             line = Line2D([x1, x2], [y2, y2], **line_kwargs)
             self.ax.add_line(line)
 
     def plot(
-        self, show_IDs=False, ylabel="Energy / $kcal$ $mol^{-1}$", ax: plt.Axes = None
-    ):
+        self, show_IDs: bool = False, ylabel: str = "Energy / $kcal$ $mol^{-1}$",
+        ax: Optional[plt.Axes] = None
+    ) -> None:
         r"""
         Method of ED class
         Plot the energy diagram. Use show_IDs=True for showing the IDs of the
@@ -423,6 +520,7 @@ class ED:
             # self.ax.set_aspect(self.aspect)
 
         self.ax.set_ylabel(ylabel)
+        self.ax.set_xlabel("Reaction Coordinate")
         self.ax.axes.get_xaxis().set_visible(False)
         self.ax.spines["top"].set_visible(False)
         self.ax.spines["right"].set_visible(False)
@@ -448,7 +546,7 @@ class ED:
         if show_IDs:
             # for showing the ID allowing the user to identify the level
             for ind, level in enumerate(data):
-                start = level[1] * (self.dimension + self.space)
+                start = self._calculate_x_position(level[1])
                 self.ax.text(
                     start,
                     level[0] + self.offset,
@@ -468,13 +566,17 @@ class ED:
             for idy, kwargs in link:
                 self.plot_link(idx, idy, **kwargs)
 
-        for box in self.electons_boxes:
+        for box in self.electrons_boxes:
             # here we add the boxes
             # x,y,boxes,electrons,side,spacing_f
             x, y, boxes, electrons, side, spacing_f = box
             plot_orbital_boxes(self.ax, x, y, boxes, electrons, side, spacing_f)
 
-    def __auto_adjust(self):
+        # Set xlim to fix x-axis range if specified
+        if self.xlim is not None:
+            self.ax.set_xlim(self.xlim)
+
+    def __auto_adjust(self) -> None:
         """
         Method of ED class
         This method use the ratio to set the best dimension and space between
@@ -490,11 +592,26 @@ class ED:
         # Max range between the energy
         Energy_variation = abs(max(self.energies) - min(self.energies))
         if self.dimension == "auto" or self.space == "auto":
-            # Unique positions of the levels
-            unique_positions = float(len(set(self.positions)))
-            space_for_level = Energy_variation * self.ratio / unique_positions
-            self.dimension = space_for_level * 0.5
-            self.space = space_for_level * 0.5
+            if self.xlim is not None:
+                # Calculate dimension and space based on xlim range
+                xmin, xmax = self.xlim
+                total_width = xmax - xmin
+                max_position = max(self.positions) if self.positions else 0
+                
+                # Calculate space for each level position to fit within xlim
+                if max_position > 0:
+                    space_for_level = total_width / (max_position + 1)
+                else:
+                    space_for_level = total_width
+
+                self.dimension = space_for_level * self.XLIM_DIMENSION_RATIO
+                self.space = space_for_level * self.XLIM_SPACE_RATIO
+            else:
+                # Original behavior: calculate based on energy variation
+                unique_positions = float(len(set(self.positions)))
+                space_for_level = Energy_variation * self.ratio / unique_positions
+                self.dimension = space_for_level * self.DIMENSION_RATIO
+                self.space = space_for_level * self.SPACE_RATIO
 
         if self.offset == "auto":
             self.offset = Energy_variation * self.offset_ratio
