@@ -161,3 +161,24 @@ cython_debug/
 #.idea/
 energydiagram/.DS_Store
 .DS_Store
+
+# AI tool configs
+.claude/
+.cursor/
+.mcp/
+.mcp.json
+
+# Local env
+.envrc
+.env.*
+.direnv/
+
+# Logs
+logs/
+
+# OS / Editor files
+Thumbs.db
+.vscode/
+
+# Cache / Temporary files
+.tmp/
