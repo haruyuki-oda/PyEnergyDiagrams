@@ -3,11 +3,6 @@
 
 `energydiagram` Python module for plotting energy profile diagrams using Matplotlib.
 
-<<<<<<< HEAD
-![alt tag](md_images/Final.png)
-## Installation 
-If you are new to Python the easiest way to get started is to use a distribution like [Anaconda](https://www.anaconda.com/). Then you can use the terminal to install the module using pip:
-=======
 ![Energy diagram](https://github.com/giacomomarchioro/PyEnergyDiagrams/blob/87885c767e4baef5c3390d1d517f31a8defe90c2/tests/fixtures/Final.png?raw=true)
 ## Installation
 If you are new to Python, the easiest way to get started is to use a distribution like [Anaconda](https://www.anaconda.com/). Then you can use the terminal to install the module using pip:
@@ -15,7 +10,6 @@ If you are new to Python, the easiest way to get started is to use a distributio
     pip install energydiagram
 
 For installing the development version:
->>>>>>> upstream/master
 
     pip install git+https://github.com/giacomomarchioro/PyEnergyDiagrams
 
@@ -44,11 +38,7 @@ Show the IDs (red numbers) to understand how to link the levels:
 ```python
 diagram.plot(show_IDs=True)
 ```
-<<<<<<< HEAD
-![alt tag](md_images/With_IDs.png)
-=======
 ![alt tag](https://github.com/giacomomarchioro/PyEnergyDiagrams/blob/87885c767e4baef5c3390d1d517f31a8defe90c2/tests/fixtures/With_IDs.png?raw=true)
->>>>>>> upstream/master
 
 Add the links using `diagram.add_link(starting_level_ID,ending_level_ID)`:
 ```python
@@ -71,16 +61,7 @@ diagram.add_electronbox(level_id=0, boxes=1, electrons=2, side=3, spacing_f=3)
 diagram.add_electronbox(3, 3, 1, 3, 3)
 diagram.add_electronbox(5, 3, 5, 3, 3)
 ```
-<<<<<<< HEAD
-The results is displayed above.
-
-## Electron boxes 
-Also electron boxes can be added, the electron spin is automatically changed following the aufbau principle.
-
-![alt tag](md_images/boxplot.png)
-=======
 The electron spin is automatically changed following the aufbau principle.
->>>>>>> upstream/master
 
 ```python
 from energydiagram import ED
@@ -118,11 +99,7 @@ Most of the time, there could be a problem with text padding. Some parameters ca
 ```python
 diagram.offset = 10
 ```
-<<<<<<< HEAD
-![alt tag](md_images/Explained.jpg)
-=======
 ![alt tag](https://github.com/giacomomarchioro/PyEnergyDiagrams/blob/87885c767e4baef5c3390d1d517f31a8defe90c2/tests/fixtures/Explained.jpg?raw=true)
->>>>>>> upstream/master
 
 To make the change effective, you must use the command `diagram.plot()` again. Remember that once you have made a first attempt at plotting. You can adjust the plot as every matplotlib plot. For convenience you can access `ax` and `fig` from the instance of the class.
 
